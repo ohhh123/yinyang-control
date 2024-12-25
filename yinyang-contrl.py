@@ -1,13 +1,17 @@
 import asyncio
 import math
 import time
+from asyncio import Future
+from typing import Any
+
 import pyautogui
 from pynput import keyboard
 
-radspeed = 0  # 单位 rad/s
 reset_radspeed = 2.5 * 0.3
+
 rad = 0.0  # 单位 rad
-time_interval = 0.1  # 单位 s
+radspeed = 0  # 单位 rad/s
+time_interval = 0.3  # 单位 s
 screen_width, screen_height = pyautogui.size()
 screen_center_x = screen_width / 2
 screen_center_y = screen_height / 2
@@ -37,14 +41,15 @@ async def update_rad():
         await asyncio.sleep(time_interval)
 
 # 异步函数，用于监听按键
-async def listen_for_keys():
+def listen_for_keys():
+    print("o1")
     def on_press(key):
+        global radspeed, reset_radspeed, rad
         if key == keyboard.Key.esc:
             return False
         try:
             if key.char == 'o':
-                print('Alt+O')
-                global radspeed, reset_radspeed, rad
+                print(f"o2")
                 if radspeed == 0:
                     radspeed = reset_radspeed
                     mouse_x, mouse_y = pyautogui.position()
@@ -56,31 +61,30 @@ async def listen_for_keys():
                     radspeed = 0
         except AttributeError:
             pass
-
-    with keyboard.Listener(on_press=on_press) as listener:
-        listener.join()
+    listener = keyboard.Listener(on_press=on_press)
+    #loop.run_in_executor(None, listener.join)
+    listener.start()
 
 # 异步函数，用于等待用户输入
 async def listen_for_input():
+    global reset_radspeed
     loop = asyncio.get_event_loop()
     future = loop.run_in_executor(None, input, "Please enter numbers: ")
 
     while True:
         user_input = await future
         try:
-            user_input = float(user_input)
-            global radspeed, reset_radspeed
-            radspeed = user_input * 0.3
-            reset_radspeed = radspeed
+            user_input = float(user_input) * 0.3
+            reset_radspeed = user_input
         except ValueError:
-            print("This is not a valid number.")
+            print(f"This is not a valid number.{radspeed}")
         future = loop.run_in_executor(None, input, "Please enter numbers: ")
 
 # 主函数，用于并行运行所有异步任务
 async def main():
+    listen_for_keys()
     await asyncio.gather(
         update_rad(),
-        listen_for_keys(),
         listen_for_input()
     )
 
