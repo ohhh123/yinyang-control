@@ -11,7 +11,7 @@ reset_radspeed = 2.5 * 0.3
 
 rad = 0.0  # 单位 rad
 radspeed = 0  # 单位 rad/s
-time_interval = 0.3  # 单位 s
+time_interval = 0.1  # 单位 s
 screen_width, screen_height = pyautogui.size()
 screen_center_x = screen_width / 2
 screen_center_y = screen_height / 2
@@ -21,18 +21,18 @@ lasttime = time.time()
 async def update_rad():
     global rad, radspeed, lasttime
     while True:
-        timeused = time.time() - lasttime
+        timeuased = time.time() - lasttime
         mouse_x, mouse_y = pyautogui.position()
         x = mouse_x - screen_center_x
         y = mouse_y - screen_center_y
-        targetrad = math.atan2(y, -x) + math.pi
+        targetrad = math.atan2(-y, -x) + math.pi
         l = (targetrad - rad + math.pi) % (2 * math.pi) - math.pi
 
-        print(f"rad: {rad}, targetrad: {targetrad}, l: {l}")
+        #print(f"rad: {rad}, targetrad: {targetrad}, l: {l}")
 
-        rad = (rad + radspeed * (timeused)) % (2 * math.pi)
-        if abs(l) > 0.6:
-            print(l > 0, radspeed < 0)
+        rad = (rad + radspeed * (timeuased)) % (2 * math.pi)
+        if abs(l) > 0.2:
+            #print(l > 0, radspeed < 0)
             if (l > 0 and radspeed < 0) or (l < 0 and radspeed > 0):
                 pyautogui.press('0')
                 radspeed = -radspeed
@@ -55,7 +55,7 @@ def listen_for_keys():
                     mouse_x, mouse_y = pyautogui.position()
                     x = mouse_x - screen_center_x
                     y = mouse_y - screen_center_y
-                    rad = math.atan2(y, -x) + math.pi
+                    rad = math.atan2(-y, -x) + math.pi
                 else:
                     reset_radspeed = radspeed
                     radspeed = 0
